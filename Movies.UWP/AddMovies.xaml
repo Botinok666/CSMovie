@@ -1,0 +1,50 @@
+﻿<Page
+    x:Class="Movies.UWP.AddMovies"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Movies.UWP"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    <Page.Resources>
+        <Flyout x:Name="InfoFlyout" x:Key="InfoFlyout"
+                OverlayInputPassThroughElement="{x:Bind dgv}">
+            <TextBlock x:Name="InfoText"/>
+        </Flyout>
+    </Page.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <StackPanel Name="UpperRibbon" Orientation="Horizontal" Spacing="5" Padding="2" Grid.Row="0">
+            <Button x:Name="BackButton" Click="Back_Click" Style="{StaticResource NavigationBackButtonNormalStyle}"/>
+            <Button Name="AddBtn" Click="AddBtn_Click" Content="Добавить ZIP"/>
+        </StackPanel>
+        <controls:DataGrid 
+            x:Name="dgv" ItemsSource="{x:Bind Movies}"
+            Grid.Row="1" 
+            AutoGenerateColumns="False" 
+            VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+            VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Auto"
+            AlternatingRowBackground="NavajoWhite"
+            SelectionMode="Single"
+            CanUserSortColumns="False">
+            <controls:DataGrid.Columns>
+                <controls:DataGridTextColumn Header="Название" Binding="{Binding Path=Movie.OriginalTitle}"/>
+                <controls:DataGridTextColumn Header="Локализация" Binding="{Binding Path=Movie.LocalizedTitle}"/>
+                <controls:DataGridTextColumn Header="Время" Binding="{Binding Path=Movie.Runtime}"/>
+                <controls:DataGridTextColumn Header="Год" Binding="{Binding Path=Movie.Year}"/>
+                <controls:DataGridTextColumn Header="Просмотр" Binding="{Binding Date}"/>
+                <controls:DataGridTextColumn Header="IMDB" Binding="{Binding Path=Movie.RatingIMDB}"/>
+                <controls:DataGridTextColumn Header="Оценка" Binding="{Binding Rate}"/>
+            </controls:DataGrid.Columns>
+        </controls:DataGrid>
+        <StackPanel Orientation="Horizontal" Spacing="5" Padding="2" Grid.Row="2" HorizontalAlignment="Center">
+            <Button x:Name="SaveBtn" Grid.Row="2" Click="SaveBtn_Click" Content="Сохранить" IsEnabled="False"/>
+        </StackPanel>
+    </Grid>
+</Page>

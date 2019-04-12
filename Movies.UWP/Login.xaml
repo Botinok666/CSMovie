@@ -1,0 +1,18 @@
+﻿<Page
+    x:Class="Movies.UWP.Login"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Movies.UWP"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid>
+        <StackPanel Orientation="Vertical" Spacing="20" VerticalAlignment="Center" HorizontalAlignment="Center">
+            <TextBox Name="loginTB" PlaceholderText="Имя" Width="240"/>
+            <PasswordBox Name="passTB" PlaceholderText="Пароль" Width="240"/>
+            <Button Content="Вход" Click="Button_Click" HorizontalAlignment="Center"/>
+        </StackPanel>
+    </Grid>
+</Page>
