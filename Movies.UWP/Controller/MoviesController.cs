@@ -4,6 +4,7 @@ using Movies.UWP.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -34,6 +35,7 @@ namespace Movies.UWP.Controller
         public PagedResult<MovieData> GetMovies(object param, int page, int count, Filters filter)
         {
             PagedResult<Movie> movies = new PagedResult<Movie>();
+            Expression<Func<Movie, float>> selectIMDB = x => x.RatingIMDB;
             using (var db = new Context())
             {
                 switch (filter)
@@ -44,7 +46,7 @@ namespace Movies.UWP.Controller
                     case Filters.GetByActor:
                         if (param is PersonData)
                             movies = db.Movies.Where(x => 
-                                x.Actors.Exists(y => y.ActorId == (param as PersonData).ID))
+                                x.Actors.Exists(y => y.ActorId == (param as PersonData).ID)).OrderBy(selectIMDB)
                                 .GetPaged(page, count);
                         break;
                     case Filters.GetByCountry:

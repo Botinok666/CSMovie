@@ -23,7 +23,8 @@ namespace Movies.Model
         public DbSet<MovieGenre> MovieGenre { get; set; }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseLazyLoadingProxies().UseSqlite(@"Filename=Movies.db");
+            //optionsBuilder.UseLazyLoadingProxies().UseSqlite(@"Filename=Movies.db");
+            optionsBuilder.UseLazyLoadingProxies().UseSqlServer("Server=lenovo-pc;User id=User0;password=User0;database=Movies");
         }
     }
 }

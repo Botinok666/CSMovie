@@ -17,6 +17,9 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using Windows.Storage;
+using Windows.Storage.Pickers;
+using Windows.Storage.AccessCache;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -46,7 +49,7 @@ namespace Movies.UWP
         {
             CheckCredentials(new object(), new RoutedEventArgs());
         }
-        private void CheckCredentials(object sender, RoutedEventArgs e)
+        private async void CheckCredentials(object sender, RoutedEventArgs e)
         {
             if (UAC.GetInstance().UserId == -1)
             {
@@ -61,6 +64,18 @@ namespace Movies.UWP
             }
             if (firstLoad)
             {
+                ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
+                if (!(localSettings.Values["picturesFolder"] is string))
+                {
+                    await new Windows.UI.Popups.MessageDialog("Please select folder where posters will be stored").ShowAsync();
+                    FolderPicker folderPicker = new FolderPicker();
+                    folderPicker.FileTypeFilter.Add("*");
+                    StorageFolder folder = await folderPicker.PickSingleFolderAsync();
+                    if (folder == null)
+                        return;
+                    string folderToken = StorageApplicationPermissions.FutureAccessList.Add(folder);
+                    localSettings.Values["picturesFolder"] = folderToken;
+                }
                 firstLoad = false;
                 filterCB.SelectedIndex = 0;
             }

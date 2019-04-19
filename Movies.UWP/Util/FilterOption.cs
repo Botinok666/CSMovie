@@ -41,6 +41,9 @@ namespace Movies.UWP.Util
                 case Filters.GetByYearPeriod:
                     Description = "году";
                     break;
+                case Filters.GetByScreenwriter:
+                    Description = "сценаристу";
+                    break;
             }
             Filter = filter;
         }
@@ -61,6 +64,7 @@ namespace Movies.UWP.Util
         GetByActor,
         GetByCountry,
         GetByDirector,
+        GetByScreenwriter,
         GetByGenre,
         GetByStoryline,
         GetByTitle,
