@@ -8,8 +8,30 @@
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <Grid>
-        <StackPanel Orientation="Vertical" Spacing="20" VerticalAlignment="Center" HorizontalAlignment="Center">
+    <Grid Background="{ThemeResource SystemControlChromeMediumLowAcrylicWindowMediumBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0" x:Name="AppTitleBar"  Background="{ThemeResource SystemControlChromeMediumLowAcrylicWindowMediumBrush}">
+            <!-- Width of the padding columns is set in LayoutMetricsChanged handler. -->
+            <!-- Using padding columns instead of Margin ensures that the background
+         paints the area under the caption control buttons (for transparent buttons). -->
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition x:Name="LeftPaddingColumn" Width="0"/>
+                <ColumnDefinition/>
+                <ColumnDefinition x:Name="RightPaddingColumn" Width="0"/>
+            </Grid.ColumnDefinitions>
+            <Image Source="Assets/Square44x44Logo.png" 
+               Grid.Column="1" HorizontalAlignment="Left"
+               Width="20" Height="20" Margin="12,0"/>
+            <TextBlock Text="Movies.UWP" 
+               Grid.Column="1"
+               Style="{StaticResource CaptionTextBlockStyle}" 
+               Margin="44,8,0,0"/>
+        </Grid>
+        <StackPanel Grid.Row="1" Orientation="Vertical" Spacing="20" 
+                    VerticalAlignment="Center" HorizontalAlignment="Center">
             <TextBox Name="loginTB" PlaceholderText="Имя" Width="240"/>
             <PasswordBox Name="passTB" PlaceholderText="Пароль" Width="240"/>
             <Button Content="Вход" Click="Button_Click" HorizontalAlignment="Center"/>

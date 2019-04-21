@@ -17,16 +17,42 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <StackPanel Name="UpperRibbon" Orientation="Horizontal" Spacing="5" Padding="2" Grid.Row="0">
-            <Button x:Name="BackButton" Click="Back_Click" Style="{StaticResource NavigationBackButtonNormalStyle}"/>
-            <Button Name="AddBtn" Click="AddBtn_Click" Content="Добавить ZIP"/>
-        </StackPanel>
+        <Grid Grid.Row="0" x:Name="AppTitleBar" 
+              Background="{ThemeResource SystemControlChromeMediumLowAcrylicWindowMediumBrush}">
+            <!-- Width of the padding columns is set in LayoutMetricsChanged handler. -->
+            <!-- Using padding columns instead of Margin ensures that the background
+         paints the area under the caption control buttons (for transparent buttons). -->
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition x:Name="LeftPaddingColumn" Width="0"/>
+                <ColumnDefinition/>
+                <ColumnDefinition x:Name="RightPaddingColumn" Width="0"/>
+            </Grid.ColumnDefinitions>
+            <Image Source="Assets/Square44x44Logo.png" 
+               Grid.Column="1" HorizontalAlignment="Left"
+               Width="20" Height="20" Margin="12,0"/>
+            <TextBlock Text="Movies.UWP" 
+               Grid.Column="1"
+               Style="{StaticResource CaptionTextBlockStyle}" 
+               Margin="44,8,0,0"/>
+        </Grid>
+        <Grid Grid.Row="1" Background="{ThemeResource SystemControlChromeMediumLowAcrylicWindowMediumBrush}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="0" Name="UpperRibbon" Orientation="Horizontal" Spacing="5" Padding="2">
+                <Button x:Name="BackButton" Click="Back_Click" Style="{StaticResource NavigationBackButtonNormalStyle}"/>
+                <Button Name="AddBtn" Click="AddBtn_Click" Content="Добавить ZIP"/>
+            </StackPanel>
+            <Button x:Name="SaveBtn" Grid.Column="1" Click="SaveBtn_Click" Content="Сохранить" IsEnabled="False" Padding="5"/>
+        </Grid>
+
         <controls:DataGrid 
             x:Name="dgv" ItemsSource="{x:Bind Movies}"
-            Grid.Row="1" 
+            Grid.Row="2" 
             AutoGenerateColumns="False" 
             VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
             VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Auto"
@@ -44,7 +70,6 @@
             </controls:DataGrid.Columns>
         </controls:DataGrid>
         <StackPanel Orientation="Horizontal" Spacing="5" Padding="2" Grid.Row="2" HorizontalAlignment="Center">
-            <Button x:Name="SaveBtn" Grid.Row="2" Click="SaveBtn_Click" Content="Сохранить" IsEnabled="False"/>
         </StackPanel>
     </Grid>
 </Page>

@@ -142,6 +142,7 @@
     <Compile Include="Util\FilterOption.cs" />
     <Compile Include="Util\KPParser.cs" />
     <Compile Include="Util\Paging.cs" />
+    <Compile Include="Util\SortOption.cs" />
     <Compile Include="Util\UAC.cs" />
   </ItemGroup>
   <ItemGroup>

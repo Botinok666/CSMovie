@@ -4,7 +4,6 @@ using Movies.UWP.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -32,94 +31,117 @@ namespace Movies.UWP.Controller
                 return db.Countries.Select(x => new CountryData(new Tuple<int, string>(x.ID, x.Name))).ToList();
             }
         }
-        public PagedResult<MovieData> GetMovies(object param, int page, int count, Filters filter)
+        public PagedResult<MovieData> GetMovies(object param, int page, int count, 
+            Filters filter, SortProperties sort)
         {
-            PagedResult<Movie> movies = new PagedResult<Movie>();
-            Expression<Func<Movie, float>> selectIMDB = x => x.RatingIMDB;
             using (var db = new Context())
             {
+                IQueryable<Movie> query = db.Movies;
+                short uid = UAC.GetInstance().UserId;
+                switch (sort)
+                {
+                    case SortProperties.RatingUser:
+                        query = db.Viewings
+                            .Where(z => z.UserID == uid)
+                            .OrderByDescending(x => x.Rating)
+                            .Select(y => y.Movie);
+                        break;
+                    case SortProperties.ViewDate:
+                        query = db.Viewings
+                            .Where(z => z.UserID == uid)
+                            .OrderByDescending(x => x.Date)
+                            .Select(y => y.Movie);
+                        break;
+                }
                 switch (filter)
                 {
-                    case Filters.GetAll:
-                        movies = db.Movies.GetPaged(page, count);
-                        break;
                     case Filters.GetByActor:
                         if (param is PersonData)
-                            movies = db.Movies.Where(x => 
-                                x.Actors.Exists(y => y.ActorId == (param as PersonData).ID)).OrderBy(selectIMDB)
-                                .GetPaged(page, count);
+                            query = query.Where(x =>
+                                x.Actors.Exists(y => y.ActorId == (param as PersonData).ID));
+                        else
+                            return new PagedResult<MovieData>();
                         break;
                     case Filters.GetByCountry:
                         if (param is CountryData)
-                            movies = db.Movies.Where(x => 
-                                x.Countries.Exists(y => y.CountryId == (param as CountryData).ID))
-                                .GetPaged(page, count);
+                            query = query.Where(x =>
+                                x.Countries.Exists(y => y.CountryId == (param as CountryData).ID));
+                        else
+                            return new PagedResult<MovieData>();
                         break;
                     case Filters.GetByDirector:
                         if (param is PersonData)
-                            movies = db.Movies.Where(x => 
-                                x.Directors.Exists(y => y.DirectorId == (param as PersonData).ID))
-                                .GetPaged(page, count);
+                            query = query.Where(x =>
+                                x.Directors.Exists(y => y.DirectorId == (param as PersonData).ID));
+                        else
+                            return new PagedResult<MovieData>();
+                        break;
+                    case Filters.GetByScreenwriter:
+                        if (param is PersonData)
+                            query = query.Where(x =>
+                                x.Screenwriters.Exists(y => y.ScreenwriterId == (param as PersonData).ID));
+                        else
+                            return new PagedResult<MovieData>();
                         break;
                     case Filters.GetByGenre:
                         if (param is GenreData)
-                            movies = db.Movies.Where(x => 
-                                x.Genres.Exists(y => y.GenreId == (param as GenreData).ID))
-                                .GetPaged(page, count);
+                            query = query.Where(x =>
+                                x.Genres.Exists(y => y.GenreId == (param as GenreData).ID));
+                        else
+                            return new PagedResult<MovieData>();
                         break;
                     case Filters.GetByStoryline:
                         if (param is string)
-                            movies = db.Movies.Where(x =>
-                                x.Storyline.Contains(param as string, StringComparison.OrdinalIgnoreCase))
-                                .GetPaged(page, count);
+                            query = query.Where(x =>
+                                x.Storyline.Contains(param as string, StringComparison.OrdinalIgnoreCase));
+                        else
+                            return new PagedResult<MovieData>();
                         break;
                     case Filters.GetByTitle:
                         if (param is string)
-                            movies = db.Movies.Where(x => 
+                            query = query.Where(x =>
                                 x.LocalizedTitle.Contains(param as string, StringComparison.OrdinalIgnoreCase) ||
-                                x.OriginalTitle.Contains(param as string, StringComparison.OrdinalIgnoreCase))
-                                .GetPaged(page, count);
-                        break;
-                    case Filters.GetByUser:
-                        if (param is short)
-                        {
-                            var viewings = db.Viewings.Where(x =>
-                                x.UserID == (short)param)
-                                .OrderBy(x => x.Date)
-                                .GetPaged(page, count);
-                            movies = new PagedResult<Movie>()
-                            {
-                                CurrentPage = viewings.CurrentPage,
-                                PageCount = viewings.PageCount,
-                                PageSize = viewings.PageSize,
-                                RowCount = viewings.RowCount,
-                                Results = viewings.Results.Select(x => x.Movie).ToList()
-                            };
-                        }
+                                x.OriginalTitle.Contains(param as string, StringComparison.OrdinalIgnoreCase));
+                        else
+                            return new PagedResult<MovieData>();
                         break;
                     case Filters.GetByYearPeriod:
                         if (param is Tuple<short, short>)
-                            movies = db.Movies.Where(x => 
+                            query = query.Where(x =>
                                 x.Year >= (param as Tuple<short, short>).Item1 &&
-                                x.Year <= (param as Tuple<short, short>).Item2)
-                                .GetPaged(page, count);
+                                x.Year <= (param as Tuple<short, short>).Item2);
+                        else
+                            return new PagedResult<MovieData>();
                         break;
                 }
+                switch (sort)
+                {
+                    case SortProperties.OriginalTitle:
+                        query = query.OrderBy(x => x.OriginalTitle);
+                        break;
+                    case SortProperties.Year:
+                        query = query.OrderBy(x => x.Year);
+                        break;
+                    case SortProperties.RatingIMDB:
+                        query = query.OrderByDescending(x => x.RatingIMDB);
+                        break;
+                }
+                PagedResult<Movie> movies = query.GetPaged(page, count);
+                return new PagedResult<MovieData>()
+                {
+                    CurrentPage = movies.CurrentPage,
+                    PageCount = movies.PageCount,
+                    PageSize = movies.PageSize,
+                    RowCount = movies.RowCount,
+                    Results = movies.Results.Select(x => new MovieData() {
+                        ID = x.ID,
+                        LocalizedTitle = x.LocalizedTitle,
+                        OriginalTitle = x.OriginalTitle,
+                        Year = x.Year,
+                        RatingIMDB = x.RatingIMDB
+                    }).ToList()
+                };
             }
-            return new PagedResult<MovieData>()
-            {
-                CurrentPage = movies.CurrentPage,
-                PageCount = movies.PageCount,
-                PageSize = movies.PageSize,
-                RowCount = movies.RowCount,
-                Results = movies.Results.Select(x => new MovieData() {
-                    ID = x.ID,
-                    LocalizedTitle = x.LocalizedTitle,
-                    OriginalTitle = x.OriginalTitle,
-                    Year = x.Year,
-                    RatingIMDB = x.RatingIMDB
-                }).ToList()
-            };
         }
         public List<PersonData> GetPersons(string name)
         {
@@ -264,7 +286,8 @@ namespace Movies.UWP.Controller
             using (var db = new Context())
             {
                 return (short)(db.Users
-                    .First(x => x.Name.Equals(name) && x.Pwd.Equals(pwd))
+                    .DefaultIfEmpty(null)
+                    .FirstOrDefault(x => x.Name.Equals(name) && x.Pwd.Equals(pwd))
                     ?.ID
                     ?? -1);
             }

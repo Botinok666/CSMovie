@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using Windows.ApplicationModel.Core;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Storage;
@@ -29,7 +30,6 @@ namespace Movies.UWP
     /// </summary>
     public sealed partial class MoviePage : Page
     {
-        public List<DescriptionData> MovieDescr { get; set; }
         public MoviePage()
         {
             InitializeComponent();
@@ -47,6 +47,47 @@ namespace Movies.UWP
             KeyboardAccelerators.Add(AltLeft);
             // ALT routes here
             AltLeft.Modifiers = VirtualKeyModifiers.Menu;
+            var coreTitleBar = CoreApplication.GetCurrentView().TitleBar;
+            coreTitleBar.ExtendViewIntoTitleBar = true;
+
+            // Set XAML element as a draggable region.
+            AppTitleBar.Height = coreTitleBar.Height;
+            Window.Current.SetTitleBar(AppTitleBar);
+            // Register a handler for when the size of the overlaid caption control changes.
+            // For example, when the app moves to a screen with a different DPI.
+            coreTitleBar.LayoutMetricsChanged += CoreTitleBar_LayoutMetricsChanged;
+
+            // Register a handler for when the title bar visibility changes.
+            // For example, when the title bar is invoked in full screen mode.
+            coreTitleBar.IsVisibleChanged += CoreTitleBar_IsVisibleChanged;
+        }
+
+        private void CoreTitleBar_LayoutMetricsChanged(CoreApplicationViewTitleBar sender, object args)
+        {
+            UpdateTitleBarLayout(sender);
+        }
+
+        private void UpdateTitleBarLayout(CoreApplicationViewTitleBar coreTitleBar)
+        {
+            // Get the size of the caption controls area and back button 
+            // (returned in logical pixels), and move your content around as necessary.
+            LeftPaddingColumn.Width = new GridLength(coreTitleBar.SystemOverlayLeftInset);
+            RightPaddingColumn.Width = new GridLength(coreTitleBar.SystemOverlayRightInset);
+
+            // Update title bar control size as needed to account for system size changes.
+            AppTitleBar.Height = coreTitleBar.Height;
+        }
+
+        private void CoreTitleBar_IsVisibleChanged(CoreApplicationViewTitleBar sender, object args)
+        {
+            if (sender.IsVisible)
+            {
+                AppTitleBar.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                AppTitleBar.Visibility = Visibility.Collapsed;
+            }
         }
         protected async override void OnNavigatedTo(NavigationEventArgs args)
         {
@@ -54,39 +95,30 @@ namespace Movies.UWP
                 return;
             MovieData movie = await MoviesController.GetInstance().GetMovie((int)args.Parameter);
             bool isNew = movie == null;
-
             //Название, если есть только в одном варианте, выводится без слэша
             titleText.Text = string.IsNullOrWhiteSpace(movie.LocalizedTitle) || string.IsNullOrWhiteSpace(movie.OriginalTitle) ?
                     movie.OriginalTitle + movie.LocalizedTitle :
                     movie.OriginalTitle + " / " + movie.LocalizedTitle;
-            //Массив для представления всех характеристик фильма
-            MovieDescr = new List<DescriptionData>
-            {
-                new DescriptionData() { Name = "Год:", Value = movie.Year.ToString() },
-                new DescriptionData() { Name = "Страна:", Value = string.Join(", ", movie.Countries.Select(x => x.Name)) },
-                new DescriptionData() { Name = "Режиссёр:", Value = string.Join(", ", movie.Directors.Select(x => x.Name)) },
-                new DescriptionData() { Name = "Сценарий:", Value = string.Join(", ", movie.Screenwriters.Select(x => x.Name)) },
-                new DescriptionData() { Name = "Слоган:", Value = movie.TagLine },
-                new DescriptionData() { Name = "Жанр:", Value = string.Join(", ", movie.Genres.Select(x => x.Name)) },
-                new DescriptionData() { Name = "Длительность:", Value = TimeSpan.FromMinutes(movie.Runtime).ToString(@"h\:mm") },
-                new DescriptionData() { Name = "В главных ролях:", Value = string.Join(", ", movie.Actors.Select(x => x.Name)) },
-                new DescriptionData() { Name = "Сюжет:", Value = movie.Storyline.Replace("<br>", Environment.NewLine) },
-                new DescriptionData() { Name = "Рейтинг KP:", Value = movie.RatingKP.ToString("F3") },
-                new DescriptionData() { Name = "Рейтинг IMDB:", Value = movie.RatingIMDB.ToString("F1") }
-            };
+            //Все харакетеристики
+            tYear.Text = movie.Year.ToString();
+            tCountry.Text = string.Join(", ", movie.Countries.Select(x => x.Name));
+            tDirector.Text = string.Join(", ", movie.Directors.Select(x => x.Name));
+            tScreenwriter.Text = string.Join(", ", movie.Screenwriters.Select(x => x.Name));
+            tTagline.Text = movie.TagLine;
+            tGenre.Text = string.Join(", ", movie.Genres.Select(x => x.Name));
+            tRuntime.Text = TimeSpan.FromMinutes(movie.Runtime).ToString(@"h\:mm");
+            tActors.Text = string.Join(", ", movie.Actors.Select(x => x.Name));
+            tPlot.Text = movie.Storyline.Replace("<br>", Environment.NewLine);
+            tRateKP.Text = movie.RatingKP.ToString("F3");
+            tRateIMDB.Text = movie.RatingIMDB.ToString("F1");
             //Добавим данные о просмотрах, если они были
             if (!isNew)
             {
                 List<ViewingData> viewings = MoviesController.GetInstance().GetViewings(movie.ID, UAC.GetInstance().UserId);
                 if (viewings.Count > 0)
-                    MovieDescr.Add(new DescriptionData()
-                    {
-                        Name = "Просмотры:",
-                        Value = string.Join(
-                            ", ", viewings.Select(x => string.Format("{0} ({1:F1})", x.Date.ToShortDateString(), x.Rating)))
-                    });
+                    tViewings.Text = string.Join(
+                            ", ", viewings.Select(x => string.Format("{0} ({1:F1})", x.Date.ToShortDateString(), x.Rating)));
             }
-            dgv.ItemsSource = MovieDescr;
 
             ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
             if (localSettings.Values["picturesFolder"] is string folderToken)
@@ -123,10 +155,10 @@ namespace Movies.UWP
             On_BackRequested();
             args.Handled = true;
         }
-    }
-    public class DescriptionData
-    {
-        public string Name { get; set; }
-        public string Value { get; set; }
+
+        private void ActionButton_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+
+        }
     }
 }

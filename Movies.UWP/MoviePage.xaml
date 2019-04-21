@@ -5,80 +5,113 @@
     xmlns:local="using:Movies.UWP"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-    
+    <Page.Resources>
+        <Style x:Key="LeftCol" TargetType="TextBlock">
+            <Setter Property="Margin" Value="4"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="Foreground" Value="Gray"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="HorizontalTextAlignment" Value="End"/>
+        </Style>
+        <Style x:Key="RightCol" TargetType="TextBlock">
+            <Setter Property="Margin" Value="4"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="HorizontalTextAlignment" Value="Start"/>
+            <Setter Property="TextWrapping" Value="WrapWholeWords"/>
+        </Style>
+    </Page.Resources>
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="1*"/>
-            <RowDefinition Height="6*"/>
-            <RowDefinition Height="1*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <StackPanel Name="UpperRibbon" Orientation="Horizontal" Padding="5" Spacing="5" Grid.Row="0">
-            <Button x:Name="BackButton" Click="Back_Click" Style="{StaticResource NavigationBackButtonNormalStyle}"/>
-            <TextBlock x:Name="titleText" Text="Title" FontFamily="Georgia" FontSize="28" VerticalAlignment="Center"/>
-        </StackPanel>
+        <Grid Grid.Row="0" x:Name="AppTitleBar" Background="{ThemeResource SystemControlChromeMediumLowAcrylicWindowMediumBrush}">
+            <!-- Width of the padding columns is set in LayoutMetricsChanged handler. -->
+            <!-- Using padding columns instead of Margin ensures that the background
+         paints the area under the caption control buttons (for transparent buttons). -->
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition x:Name="LeftPaddingColumn" Width="0"/>
+                <ColumnDefinition/>
+                <ColumnDefinition x:Name="RightPaddingColumn" Width="0"/>
+            </Grid.ColumnDefinitions>
+            <Image Source="Assets/Square44x44Logo.png" 
+               Grid.Column="1" HorizontalAlignment="Left"
+               Width="20" Height="20" Margin="12,0"/>
+            <TextBlock Text="Movies.UWP" 
+               Grid.Column="1"
+               Style="{StaticResource CaptionTextBlockStyle}" 
+               Margin="44,8,0,0"/>
+        </Grid>
+        <Grid Grid.Row="1" x:Name="UpperGrid" Background="{ThemeResource SystemControlChromeMediumLowAcrylicWindowMediumBrush}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="0" Name="UpperRibbon" Orientation="Horizontal" Padding="5" Spacing="5">
+                <Button x:Name="BackButton" Click="Back_Click" Style="{StaticResource NavigationBackButtonNormalStyle}"/>
+                <TextBlock x:Name="titleText" Text="Title" FontFamily="Georgia" FontSize="28" VerticalAlignment="Center"/>
+            </StackPanel>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Padding="5">
+                <Button x:Name="ActionButton" Content="Добавить просмотр" Tapped="ActionButton_Tapped"/>
+            </StackPanel>
+        </Grid>
 
-        <Grid Grid.Row="1">
+        <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="360"/>
                 <ColumnDefinition Width="1*"/>
             </Grid.ColumnDefinitions>
             <Image x:Name="poster" Grid.Column="0" VerticalAlignment="Center" Stretch="Uniform"/>
-            <controls:DataGrid 
-                    x:Name="dgv" ItemsSource="{x:Bind MovieDescr}"
-                    Grid.Column="1" 
-                    AutoGenerateColumns="False" HorizontalAlignment="Stretch"
-                    VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Disabled"
-                    SelectionMode="Single" IsReadOnly="True" HeadersVisibility="None"
-                    CanUserSortColumns="False">
-                <controls:DataGrid.Columns>
-                    <controls:DataGridTextColumn Binding="{Binding Path=Name}" Width="auto">
-                        <controls:DataGridTextColumn.ElementStyle>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="HorizontalTextAlignment" Value="End"/>
-                            </Style>
-                        </controls:DataGridTextColumn.ElementStyle>
-                    </controls:DataGridTextColumn>
-                    <controls:DataGridTextColumn Binding="{Binding Path=Value}" Width="*">
-                        <controls:DataGridTextColumn.ElementStyle>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="TextWrapping" Value="WrapWholeWords"/>
-                                <Setter Property="Padding" Value="0,4"/>
-                                <Setter Property="Height" Value="auto"/>
-                            </Style>
-                        </controls:DataGridTextColumn.ElementStyle>
-                    </controls:DataGridTextColumn>
-                </controls:DataGrid.Columns>
-            </controls:DataGrid>
-            <!--
-            <Grid Grid.Column="1" Name="MainGrid">
-                <ListView x:Name="descriptionListView" Width="{Binding ElementName=MainGrid,Path=Width}">
-                    <ListView.ItemTemplate>
-                        <DataTemplate>
-                            <StackPanel Width="{Binding ElementName=descriptionListView,Path=Width}" 
-                                        Orientation="Horizontal" Padding="5">
-                                <Grid Width="{Binding ElementName=descriptionListView,Path=Width}">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width={Binding }/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
-                                    <TextBlock Text="{Binding Name}" Grid.Column="0" HorizontalTextAlignment="Right"/>
-                                    <TextBlock Text="{Binding Value}" Grid.Column="1" HorizontalTextAlignment="Left" 
-                                               TextWrapping="WrapWholeWords"/>
-                                </Grid>
-                            </StackPanel>
-                        </DataTemplate>
-                    </ListView.ItemTemplate>
-                    <ListView.ItemContainerStyle>
-                        <Style TargetType="ListViewItem">
-                            <Setter Property="HorizontalAlignment" Value="Stretch"></Setter>
-                        </Style>
-                    </ListView.ItemContainerStyle>
-                </ListView>
-            </Grid>
-            -->
+            <ScrollViewer Grid.Column="1">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Grid.Column="0" Style="{StaticResource LeftCol}" Text="Год: "/>
+                    <TextBlock Grid.Row="1" Grid.Column="0" Style="{StaticResource LeftCol}" Text="Страна: "/>
+                    <TextBlock Grid.Row="2" Grid.Column="0" Style="{StaticResource LeftCol}" Text="Режиссёр: "/>
+                    <TextBlock Grid.Row="3" Grid.Column="0" Style="{StaticResource LeftCol}" Text="Сценарий: "/>
+                    <TextBlock Grid.Row="4" Grid.Column="0" Style="{StaticResource LeftCol}" Text="Слоган: "/>
+                    <TextBlock Grid.Row="5" Grid.Column="0" Style="{StaticResource LeftCol}" Text="Жанр: "/>
+                    <TextBlock Grid.Row="6" Grid.Column="0" Style="{StaticResource LeftCol}" Text="Длительность: "/>
+                    <TextBlock Grid.Row="7" Grid.Column="0" Style="{StaticResource LeftCol}" Text="В главных ролях: "/>
+                    <TextBlock Grid.Row="8" Grid.Column="0" Style="{StaticResource LeftCol}" Text="Сюжет: "/>
+                    <TextBlock Grid.Row="9" Grid.Column="0" Style="{StaticResource LeftCol}" Text="Рейтинг KP: "/>
+                    <TextBlock Grid.Row="10" Grid.Column="0" Style="{StaticResource LeftCol}" Text="Рейтинг IMDB: "/>
+                    <TextBlock Grid.Row="11" Grid.Column="0" Style="{StaticResource LeftCol}" Text="Просмотры: "/>
+
+                    <TextBlock Grid.Row="0" Grid.Column="1" Style="{StaticResource RightCol}" x:Name="tYear"/>
+                    <TextBlock Grid.Row="1" Grid.Column="1" Style="{StaticResource RightCol}" x:Name="tCountry"/>
+                    <TextBlock Grid.Row="2" Grid.Column="1" Style="{StaticResource RightCol}" x:Name="tDirector"/>
+                    <TextBlock Grid.Row="3" Grid.Column="1" Style="{StaticResource RightCol}" x:Name="tScreenwriter"/>
+                    <TextBlock Grid.Row="4" Grid.Column="1" Style="{StaticResource RightCol}" x:Name="tTagline"/>
+                    <TextBlock Grid.Row="5" Grid.Column="1" Style="{StaticResource RightCol}" x:Name="tGenre"/>
+                    <TextBlock Grid.Row="6" Grid.Column="1" Style="{StaticResource RightCol}" x:Name="tRuntime"/>
+                    <TextBlock Grid.Row="7" Grid.Column="1" Style="{StaticResource RightCol}" x:Name="tActors"/>
+                    <TextBlock Grid.Row="8" Grid.Column="1" Style="{StaticResource RightCol}" x:Name="tPlot"/>
+                    <TextBlock Grid.Row="9" Grid.Column="1" Style="{StaticResource RightCol}" x:Name="tRateKP"/>
+                    <TextBlock Grid.Row="10" Grid.Column="1" Style="{StaticResource RightCol}" x:Name="tRateIMDB"/>
+                    <TextBlock Grid.Row="11" Grid.Column="1" Style="{StaticResource RightCol}" x:Name="tViewings"/>
+                </Grid>
+            </ScrollViewer>
         </Grid>
     </Grid>
 </Page>

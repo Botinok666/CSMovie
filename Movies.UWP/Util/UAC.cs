@@ -22,5 +22,9 @@ namespace Movies.UWP.Util
             UserId = MoviesController.GetInstance().GetUserId(name, pass);
             return UserId != -1;
         }
+        public void LogOut()
+        {
+            UserId = -1;
+        }
     }
 }

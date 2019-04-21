@@ -20,6 +20,7 @@ using Windows.UI.Xaml.Navigation;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using Windows.Storage.AccessCache;
+using Windows.ApplicationModel.Core;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -30,7 +31,6 @@ namespace Movies.UWP
     /// </summary>
     public sealed partial class MainPage : Page
     {
-        private int Page = 1;
         private object filterParam;
         private bool firstLoad = true;
         public PagedResult<MovieData> Movies { get; set; }
@@ -40,10 +40,54 @@ namespace Movies.UWP
             Loaded += new RoutedEventHandler(CheckCredentials);
             filterCB.ItemsSource = FilterOption.FilterOptions;
             filterCB.DisplayMemberPath = "Description";
+            sortCB.ItemsSource = SortOption.SortOptions;
+            sortCB.DisplayMemberPath = "Description";
             dgv.Columns[0].Width = new DataGridLength(1, DataGridLengthUnitType.Star);
             dgv.Columns[1].Width = new DataGridLength(1, DataGridLengthUnitType.Star);
             dgv.Columns[2].Width = DataGridLength.Auto;
             dgv.Columns[3].Width = DataGridLength.Auto;
+
+            var coreTitleBar = CoreApplication.GetCurrentView().TitleBar;
+            coreTitleBar.ExtendViewIntoTitleBar = true;
+
+            // Set XAML element as a draggable region.
+            AppTitleBar.Height = coreTitleBar.Height;
+            Window.Current.SetTitleBar(AppTitleBar);
+            // Register a handler for when the size of the overlaid caption control changes.
+            // For example, when the app moves to a screen with a different DPI.
+            coreTitleBar.LayoutMetricsChanged += CoreTitleBar_LayoutMetricsChanged;
+
+            // Register a handler for when the title bar visibility changes.
+            // For example, when the title bar is invoked in full screen mode.
+            coreTitleBar.IsVisibleChanged += CoreTitleBar_IsVisibleChanged;
+        }
+
+        private void CoreTitleBar_LayoutMetricsChanged(CoreApplicationViewTitleBar sender, object args)
+        {
+            UpdateTitleBarLayout(sender);
+        }
+
+        private void UpdateTitleBarLayout(CoreApplicationViewTitleBar coreTitleBar)
+        {
+            // Get the size of the caption controls area and back button 
+            // (returned in logical pixels), and move your content around as necessary.
+            LeftPaddingColumn.Width = new GridLength(coreTitleBar.SystemOverlayLeftInset);
+            RightPaddingColumn.Width = new GridLength(coreTitleBar.SystemOverlayRightInset);
+
+            // Update title bar control size as needed to account for system size changes.
+            AppTitleBar.Height = coreTitleBar.Height;
+        }
+
+        private void CoreTitleBar_IsVisibleChanged(CoreApplicationViewTitleBar sender, object args)
+        {
+            if (sender.IsVisible)
+            {
+                AppTitleBar.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                AppTitleBar.Visibility = Visibility.Collapsed;
+            }
         }
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
@@ -59,8 +103,8 @@ namespace Movies.UWP
                         db.Users.Add(new User() { ID = 1, Name = "admin", Pwd = "p@ssw0rd", Role = Roles.ROLE_ADMIN });
                         db.SaveChanges();
                     }
-            //    Frame.Navigate(typeof(Login));
-                UAC.GetInstance().Authorize("admin", "p@ssw0rd");
+                Frame.Navigate(typeof(Login));
+                return;
             }
             if (firstLoad)
             {
@@ -77,18 +121,19 @@ namespace Movies.UWP
                     localSettings.Values["picturesFolder"] = folderToken;
                 }
                 firstLoad = false;
-                filterCB.SelectedIndex = 0;
+                sortCB.SelectedIndex = SortOption.SortOptions.FindIndex(j => j.SortProperty == SortProperties.ViewDate);
+                filterCB.SelectedIndex = FilterOption.FilterOptions.FindIndex(j => j.Filter == Filters.GetAll);
             }
         }
         private void UpdateDG(int page)
         {
-            Movies = MoviesController.GetInstance()
-                .GetMovies(filterParam, page, 10, (filterCB.SelectedItem as FilterOption).Filter);
+            Movies = MoviesController.GetInstance().GetMovies(filterParam, page, 25, 
+                (filterCB.SelectedItem as FilterOption).Filter,
+                (sortCB.SelectedItem as SortOption).SortProperty);
             currentPage.Text = string.Format("{0}/{1}", Movies.CurrentPage, Movies.PageCount);
             leftPage.IsEnabled = Movies.CurrentPage > 1;
             rightPage.IsEnabled = Movies.CurrentPage < Movies.PageCount;
             dgv.ItemsSource = Movies.Results;
-            Page = page;
         }
         private void Add_Click(object sender, RoutedEventArgs e)
         {
@@ -113,7 +158,6 @@ namespace Movies.UWP
 
         private void FilterCB_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            Page = 1;
             switch ((filterCB.SelectedItem as FilterOption).Filter)
             {
                 case Filters.GetAll:
@@ -123,6 +167,7 @@ namespace Movies.UWP
                     break;
                 case Filters.GetByActor:
                 case Filters.GetByDirector:
+                case Filters.GetByScreenwriter:
                     paramTB.Visibility = Visibility.Collapsed;
                     paramCB.IsEditable = true;
                     paramCB.Visibility = Visibility.Visible;
@@ -145,20 +190,14 @@ namespace Movies.UWP
                     paramCB.Visibility = Visibility.Collapsed;
                     paramTB.Visibility = Visibility.Visible;
                     break;
-                case Filters.GetByUser:
-                    paramTB.Visibility = Visibility.Collapsed;
-                    paramCB.Visibility = Visibility.Collapsed;
-                    filterParam = UAC.GetInstance().UserId;
-                    break;
             }
-            UpdateDG(Page);
+            UpdateDG(1);
         }
 
         private void ParamCB_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            Page = 1;
             filterParam = paramCB.SelectedItem;
-            UpdateDG(Page);
+            UpdateDG(1);
         }
 
         private void ParamCB_TextSubmitted(ComboBox sender, ComboBoxTextSubmittedEventArgs args)
@@ -182,8 +221,7 @@ namespace Movies.UWP
                     && end > start)
                 {
                     filterParam = new Tuple<short, short>(start, end);
-                    Page = 1;
-                    UpdateDG(Page);
+                    UpdateDG(1);
                 }
                 else
                 {
@@ -199,11 +237,39 @@ namespace Movies.UWP
             {
                 if (!string.IsNullOrWhiteSpace((sender as TextBox).Text))
                 {
-                    Page = 1;
                     filterParam = (sender as TextBox).Text;
-                    UpdateDG(Page);
+                    UpdateDG(1);
                 }
             }
+        }
+
+        private void SortCB_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (filterCB.SelectedItem == null)
+                return;
+            UpdateDG(1);
+        }
+
+        private void CurrentPage_KeyUp(object sender, KeyRoutedEventArgs e)
+        {
+            if (e.Key != Windows.System.VirtualKey.Enter)
+                return;
+            if (!int.TryParse((sender as TextBox).Text, out int pageNum) || pageNum > Movies.PageCount || pageNum < 1)
+            {
+                (sender as TextBox).Text = string.Format("{0}/{1}", Movies.CurrentPage, Movies.PageCount);
+                return;
+            }
+            UpdateDG(pageNum);
+        }
+        private void CurrentPage_GotFocus(object sender, RoutedEventArgs e)
+        {
+            (sender as TextBox).SelectAll();
+        }
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            UAC.GetInstance().LogOut();
+            Frame.Navigate(typeof(Login));
+            return;
         }
     }
 }

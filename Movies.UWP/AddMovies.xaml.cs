@@ -64,6 +64,7 @@ namespace Movies.UWP
             KeyboardAccelerators.Add(AltLeft);
             // ALT routes here
             AltLeft.Modifiers = VirtualKeyModifiers.Menu;
+
             dgv.Columns[0].Width = new DataGridLength(1, DataGridLengthUnitType.Star);
             dgv.Columns[1].Width = new DataGridLength(1, DataGridLengthUnitType.Star);
             dgv.Columns[2].Width = DataGridLength.Auto;
@@ -191,12 +192,10 @@ namespace Movies.UWP
             int userId = UAC.GetInstance().UserId;
             int viewings = await controller.SaveViewings(Movies.Select(
                 x => new ViewingData(x.Movie.ID, userId, DateTime.Parse(x.Date), x.Rate)).ToList());
-            //await new Windows.UI.Popups.MessageDialog(
             InfoText.Text = string.Format("Сохранено {0}/{1} фильмов{2}Добавлено {3}/{1} просмотров",
                 result, Movies.Count, Environment.NewLine, viewings);
             InfoFlyout.ShowAt(dgv);
-            //.ShowAsync();
-            Movies.Clear();
+            Movies = new List<MovieDisplay>();
         }
         private void Date_DateChanged(object sender, DatePickerValueChangedEventArgs e)
         {

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Movies.UWP.Util
 {
@@ -35,9 +34,6 @@ namespace Movies.UWP.Util
                 case Filters.GetByTitle:
                     Description = "названию";
                     break;
-                case Filters.GetByUser:
-                    Description = "просмотрам";
-                    break;
                 case Filters.GetByYearPeriod:
                     Description = "году";
                     break;
@@ -47,14 +43,15 @@ namespace Movies.UWP.Util
             }
             Filter = filter;
         }
-        private static IEnumerable<FilterOption> filterOptions;
-        public static IEnumerable<FilterOption> FilterOptions
+        private static List<FilterOption> filterOptions;
+        public static List<FilterOption> FilterOptions
         {
             get
             {
                 return filterOptions ?? (filterOptions = (
                     Enum.GetValues(typeof(Filters)) as Filters[])
-                    .Select(x => new FilterOption(x)));
+                    .Select(x => new FilterOption(x))
+                    .ToList());
             }
         }
     }
@@ -68,7 +65,6 @@ namespace Movies.UWP.Util
         GetByGenre,
         GetByStoryline,
         GetByTitle,
-        GetByUser,
         GetByYearPeriod
     }
 }
