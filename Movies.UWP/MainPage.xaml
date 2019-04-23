@@ -55,7 +55,7 @@
             <StackPanel Name="optionsPanel" Grid.Column="1" Orientation="Horizontal" Padding="5" Spacing="5" 
                     VerticalAlignment="Center" HorizontalAlignment="Right">
                 <Button Content="Добавить фильмы" Click="Add_Click"/>
-                <Button Content="Выйти" Click="Button_Click"/>
+                <Button Content="Профиль" Click="Button_Click"/>
             </StackPanel>
         </Grid>
 
@@ -64,7 +64,7 @@
                            AutoGenerateColumns="False" IsReadOnly="True"
                            VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
                            VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Auto"
-                           AlternatingRowBackground="NavajoWhite"
+                           AlternatingRowBackground="{StaticResource AltColor}"
                            SelectionMode="Single" CanUserSortColumns="False" 
                            DoubleTapped="Dgv_DoubleTapped">
             <controls:DataGrid.Columns>

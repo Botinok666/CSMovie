@@ -21,6 +21,9 @@
             <Setter Property="HorizontalTextAlignment" Value="Start"/>
             <Setter Property="TextWrapping" Value="WrapWholeWords"/>
         </Style>
+        <Flyout x:Name="InfoFlyout" x:Key="InfoFlyout">
+            <TextBlock x:Name="InfoText"/>
+        </Flyout>
     </Page.Resources>
     <Grid>
         <Grid.RowDefinitions>
@@ -54,8 +57,9 @@
                 <Button x:Name="BackButton" Click="Back_Click" Style="{StaticResource NavigationBackButtonNormalStyle}"/>
                 <TextBlock x:Name="titleText" Text="Title" FontFamily="Georgia" FontSize="28" VerticalAlignment="Center"/>
             </StackPanel>
-            <StackPanel Grid.Column="1" Orientation="Horizontal" Padding="5">
-                <Button x:Name="ActionButton" Content="Добавить просмотр" Tapped="ActionButton_Tapped"/>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Padding="5" Spacing="5">
+                <TextBox x:Name="Rate" PlaceholderText="Оценка" TextChanged="Rate_TextChanged"/>
+                <Button x:Name="ActionButton" Content="Добавить просмотр" IsEnabled="False" Tapped="ActionButton_Tapped"/>
             </StackPanel>
         </Grid>
 

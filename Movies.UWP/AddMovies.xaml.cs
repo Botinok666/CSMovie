@@ -12,6 +12,7 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.ApplicationModel.Core;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Networking.BackgroundTransfer;
@@ -72,6 +73,47 @@ namespace Movies.UWP
             dgv.Columns[4].Width = DataGridLength.Auto;
             dgv.Columns[5].Width = DataGridLength.Auto;
             dgv.Columns[6].Width = DataGridLength.Auto;
+            var coreTitleBar = CoreApplication.GetCurrentView().TitleBar;
+            coreTitleBar.ExtendViewIntoTitleBar = true;
+
+            // Set XAML element as a draggable region.
+            AppTitleBar.Height = coreTitleBar.Height;
+            Window.Current.SetTitleBar(AppTitleBar);
+            // Register a handler for when the size of the overlaid caption control changes.
+            // For example, when the app moves to a screen with a different DPI.
+            coreTitleBar.LayoutMetricsChanged += CoreTitleBar_LayoutMetricsChanged;
+
+            // Register a handler for when the title bar visibility changes.
+            // For example, when the title bar is invoked in full screen mode.
+            coreTitleBar.IsVisibleChanged += CoreTitleBar_IsVisibleChanged;
+        }
+
+        private void CoreTitleBar_LayoutMetricsChanged(CoreApplicationViewTitleBar sender, object args)
+        {
+            UpdateTitleBarLayout(sender);
+        }
+
+        private void UpdateTitleBarLayout(CoreApplicationViewTitleBar coreTitleBar)
+        {
+            // Get the size of the caption controls area and back button 
+            // (returned in logical pixels), and move your content around as necessary.
+            LeftPaddingColumn.Width = new GridLength(coreTitleBar.SystemOverlayLeftInset);
+            RightPaddingColumn.Width = new GridLength(coreTitleBar.SystemOverlayRightInset);
+
+            // Update title bar control size as needed to account for system size changes.
+            AppTitleBar.Height = coreTitleBar.Height;
+        }
+
+        private void CoreTitleBar_IsVisibleChanged(CoreApplicationViewTitleBar sender, object args)
+        {
+            if (sender.IsVisible)
+            {
+                AppTitleBar.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                AppTitleBar.Visibility = Visibility.Collapsed;
+            }
         }
 
         private async void AddBtn_Click(object param, RoutedEventArgs e)
@@ -79,6 +121,7 @@ namespace Movies.UWP
             AddBtn.IsEnabled = false;
             FileOpenPicker diag = new FileOpenPicker();
             diag.FileTypeFilter.Add(".zip");
+            diag.FileTypeFilter.Add(".html");
             StorageFile file = await diag.PickSingleFileAsync();
             AddBtn.IsEnabled = true;
             if (file == null)
@@ -88,21 +131,28 @@ namespace Movies.UWP
             List<string> html;
             int count = 0;
             using (Stream stream = await file.OpenStreamForReadAsync())
-            using (ZipArchive zip = new ZipArchive(stream,
-                ZipArchiveMode.Read, false))
             {
-                count = zip.Entries.Count;
-                html = zip.Entries
-                    .OrderBy(entry => entry.LastWriteTime.DateTime)
-                    .Select(entry =>
+                if (file.FileType.Equals("zip"))
+                {
+                    using (ZipArchive zip = new ZipArchive(stream,
+                        ZipArchiveMode.Read, false))
                     {
-                        var streamR = new StreamReader(
-                            entry.Open(), CodePagesEncodingProvider.Instance.GetEncoding(1251));
-                        string result = streamR.ReadToEnd();
-                        streamR.Close();
-                        return result;
-                    })
-                    .ToList();
+                        count = zip.Entries.Count;
+                        html = zip.Entries
+                            .OrderBy(entry => entry.LastWriteTime.DateTime)
+                            .Select(entry =>
+                            {
+                                var streamR = new StreamReader(
+                                    entry.Open(), CodePagesEncodingProvider.Instance.GetEncoding(1251));
+                                string result = streamR.ReadToEnd();
+                                streamR.Close();
+                                return result;
+                            })
+                            .ToList();
+                    }
+                }
+                else
+                    html = new List<string>() { new StreamReader(stream).ReadToEnd() };
             }
             List<MovieData> movies = html
                 .AsParallel()
@@ -168,7 +218,6 @@ namespace Movies.UWP
                 InfoFlyout.Hide();
             InfoText.Text = builder.ToString();
             InfoFlyout.ShowAt(dgv);
-            //await new Windows.UI.Popups.MessageDialog(builder.ToString()).ShowAsync();
             Movies = movies
                 .Select(movie => new MovieDisplay(movie, DateTime.Now.Date, movie.RatingIMDB))
                 .ToList();

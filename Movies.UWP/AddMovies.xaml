@@ -45,7 +45,7 @@
             </Grid.ColumnDefinitions>
             <StackPanel Grid.Column="0" Name="UpperRibbon" Orientation="Horizontal" Spacing="5" Padding="2">
                 <Button x:Name="BackButton" Click="Back_Click" Style="{StaticResource NavigationBackButtonNormalStyle}"/>
-                <Button Name="AddBtn" Click="AddBtn_Click" Content="Добавить ZIP"/>
+                <Button Name="AddBtn" Click="AddBtn_Click" Content="Добавить ZIP/HTML"/>
             </StackPanel>
             <Button x:Name="SaveBtn" Grid.Column="1" Click="SaveBtn_Click" Content="Сохранить" IsEnabled="False" Padding="5"/>
         </Grid>

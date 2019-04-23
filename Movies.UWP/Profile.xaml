@@ -1,0 +1,98 @@
+﻿<Page
+    x:Class="Movies.UWP.Profile"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Movies.UWP"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    <Page.Resources>
+        <Style x:Key="LeftCol" TargetType="TextBlock">
+            <Setter Property="Margin" Value="4"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="Foreground" Value="Gray"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="HorizontalTextAlignment" Value="End"/>
+        </Style>
+        <Style x:Key="RightCol" TargetType="TextBlock">
+            <Setter Property="Margin" Value="4"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="HorizontalTextAlignment" Value="Start"/>
+            <Setter Property="TextWrapping" Value="WrapWholeWords"/>
+        </Style>
+        <Flyout x:Name="InfoFlyout" x:Key="InfoFlyout">
+            <TextBlock x:Name="InfoText"/>
+        </Flyout>
+    </Page.Resources>
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0" x:Name="AppTitleBar"  Background="{ThemeResource SystemControlChromeMediumLowAcrylicWindowMediumBrush}">
+            <!-- Width of the padding columns is set in LayoutMetricsChanged handler. -->
+            <!-- Using padding columns instead of Margin ensures that the background
+         paints the area under the caption control buttons (for transparent buttons). -->
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition x:Name="LeftPaddingColumn" Width="0"/>
+                <ColumnDefinition/>
+                <ColumnDefinition x:Name="RightPaddingColumn" Width="0"/>
+            </Grid.ColumnDefinitions>
+            <Image Source="Assets/Square44x44Logo.png" 
+               Grid.Column="1" HorizontalAlignment="Left"
+               Width="20" Height="20" Margin="12,0"/>
+            <TextBlock Text="Movies.UWP" 
+               Grid.Column="1"
+               Style="{StaticResource CaptionTextBlockStyle}" 
+               Margin="44,8,0,0"/>
+        </Grid>
+        <StackPanel Grid.Row="1" Orientation="Horizontal">
+            <Button x:Name="BackButton" Click="Back_Click" Style="{StaticResource NavigationBackButtonNormalStyle}" VerticalAlignment="Top"/>
+            <StackPanel Orientation="Vertical" Padding="5" Spacing="2">
+                <Button x:Name="ShowStats" Content="Показать статистику" Click="ShowStats_Click" HorizontalAlignment="Center"/>
+                <Grid x:Name="StatsGrid" Visibility="Collapsed">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Всего просмотров: " TextAlignment="End" 
+                               Style="{StaticResource LeftCol}"/>
+                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Просмотрено фильмов: " TextAlignment="End" 
+                               Style="{StaticResource LeftCol}"/>
+                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Общее время: " TextAlignment="End" 
+                               Style="{StaticResource LeftCol}"/>
+                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Популярные жанры: " TextAlignment="End" 
+                               Style="{StaticResource LeftCol}"/>
+                    <TextBlock Grid.Row="0" Grid.Column="1" x:Name="tViewCnt" TextAlignment="Start" 
+                               Style="{StaticResource RightCol}"/>
+                    <TextBlock Grid.Row="1" Grid.Column="1" x:Name="tMovieCnt" TextAlignment="Start" 
+                               Style="{StaticResource RightCol}"/>
+                    <TextBlock Grid.Row="2" Grid.Column="1" x:Name="tTotalRuntime" TextAlignment="Start" 
+                               Style="{StaticResource RightCol}"/>
+                    <TextBlock Grid.Row="3" Grid.Column="1" x:Name="tGenresRate" TextAlignment="Start" 
+                               Style="{StaticResource RightCol}"/>
+                </Grid>
+            </StackPanel>
+        </StackPanel>
+        <StackPanel Grid.Row="2" Orientation="Horizontal" Padding="5" Spacing="5" Background="{StaticResource AltColor}">
+            <PasswordBox x:Name="oldPass" PlaceholderText="Старый пароль" MinWidth="150"/>
+            <PasswordBox x:Name="newPass" PlaceholderText="Новый пароль" MinWidth="150"/>
+            <Button x:Name="changePwd" Content="Сменить пароль" Click="ChangePwd_Click"/>
+        </StackPanel>
+        
+        <StackPanel x:Name="addUserPanel" Grid.Row="3" Orientation="Horizontal" Padding="5" Spacing="5">
+            <TextBox x:Name="userName" PlaceholderText="Логин" MinWidth="150"/>
+            <Button x:Name="addUser" Content="Добавить пользователя" Click="AddUser_Click"/>
+        </StackPanel>
+    </Grid>
+</Page>

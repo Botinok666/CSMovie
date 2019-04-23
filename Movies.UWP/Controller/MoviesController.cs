@@ -292,5 +292,73 @@ namespace Movies.UWP.Controller
                     ?? -1);
             }
         }
+        public UserStatistics GetUserStatistics()
+        {
+            UserStatistics result = null;
+            using (var db = new Context())
+                result = new UserStatistics(db);
+            return result;
+        }
+        public bool ChangeUserPwd(string oldPwd, string newPwd)
+        {
+            using (var db = new Context())
+            {
+                short uid = UAC.GetInstance().UserId;
+                var user = db.Users
+                    .DefaultIfEmpty(null)
+                    .FirstOrDefault(x => x.ID == uid);
+                if (!user.Pwd.Equals(oldPwd))
+                    return false;
+                user.Pwd = newPwd;
+                db.Users.Update(user);
+                db.SaveChanges();
+                return true;
+            }
+        }
+        public bool AddUser(string name)
+        {
+            using (var db = new Context())
+            {
+                var user = db.Users
+                    .DefaultIfEmpty(null)
+                    .FirstOrDefault(x => x.Name.Equals(name));
+                if (user != null)
+                    return false;
+                user = new User() { Name = name, Pwd = "", Role = Roles.ROLE_USER };
+                db.Users.Add(user);
+                db.SaveChanges();
+                return true;
+            }
+        }
+    }
+    public class UserStatistics
+    {
+        public int ViewingsCount { get; private set; }
+        public int MoviesCount { get; private set; }
+        public TimeSpan TotalRuntime { get; private set; }
+        public List<Tuple<string, float>> GenrePercentage { get; private set; }
+        public UserStatistics(Context context)
+        {
+            short uid = UAC.GetInstance().UserId;
+            ViewingsCount = context.Viewings
+                .Count(x => x.UserID == uid);
+            MoviesCount = context.Viewings
+                .Where(x => x.UserID == uid)
+                .GroupBy(x => x.MovieID)
+                .Select(x => x.First())
+                .Count();
+            TotalRuntime = TimeSpan.FromMinutes(context.Viewings
+                .Where(z => z.UserID == uid)
+                .Select(x => x.Movie)
+                .Sum(y => y.Runtime));
+            GenrePercentage = context.Viewings
+                .Where(z => z.UserID == uid && z.Movie.Genres.Count > 0)
+                .Select(x => x.Movie.Genres.First())
+                .GroupBy(y => y.GenreId, y => y.Genre.Name)
+                .Select(w => new Tuple<string, float>(w.First(), w.Count()))
+                .OrderByDescending(x => x.Item2)
+                .Take(3)
+                .ToList();
+        }
     }
 }

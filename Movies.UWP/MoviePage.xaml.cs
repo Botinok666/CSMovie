@@ -30,6 +30,7 @@ namespace Movies.UWP
     /// </summary>
     public sealed partial class MoviePage : Page
     {
+        private int id;
         public MoviePage()
         {
             InitializeComponent();
@@ -93,7 +94,8 @@ namespace Movies.UWP
         {
             if (!(args.Parameter is int))
                 return;
-            MovieData movie = await MoviesController.GetInstance().GetMovie((int)args.Parameter);
+            id = (int)args.Parameter;
+            MovieData movie = await MoviesController.GetInstance().GetMovie(id);
             bool isNew = movie == null;
             //Название, если есть только в одном варианте, выводится без слэша
             titleText.Text = string.IsNullOrWhiteSpace(movie.LocalizedTitle) || string.IsNullOrWhiteSpace(movie.OriginalTitle) ?
@@ -156,9 +158,42 @@ namespace Movies.UWP
             args.Handled = true;
         }
 
-        private void ActionButton_Tapped(object sender, TappedRoutedEventArgs e)
+        private async void ActionButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
+            ActionButton.IsEnabled = false;
+            DateTime date = DateTime.Now.Date;
+            ContentDialog dialog = new ContentDialog()
+            {
+                Title = "Подтвердите действие",
+                Content = string.Format("Добавить просмотр за {0} с оценкой {1}?", date.ToShortDateString(), Rate.Text),
+                PrimaryButtonText = "Да",
+                CloseButtonText = "Нет"
+            };
+            var result = await dialog.ShowAsync();
+            if (result == ContentDialogResult.Primary)
+            {
+                ViewingData viewing = new ViewingData(id, UAC.GetInstance().UserId, date, float.Parse(Rate.Text));
+                int z = await MoviesController.GetInstance().SaveViewings(new List<ViewingData>() { viewing });
+                if (z > 0)
+                {
+                    InfoText.Text = "Просмотр добавлен";
+                    List<ViewingData> viewings = MoviesController.GetInstance().GetViewings(id, UAC.GetInstance().UserId);
+                    tViewings.Text = string.Join(
+                            ", ", viewings.Select(x => string.Format("{0} ({1:F1})", x.Date.ToShortDateString(), x.Rating)));
+                }
+                else
+                    InfoText.Text = "Что-то пошло не так";
+                InfoFlyout.ShowAt(Rate);
+                Rate.Text = "";
+            }
+            else
+                ActionButton.IsEnabled = true;
+        }
 
+        private void Rate_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            ActionButton.IsEnabled = float.TryParse((sender as TextBox).Text, out float result) 
+                && result >= 0 && result <= 10;
         }
     }
 }

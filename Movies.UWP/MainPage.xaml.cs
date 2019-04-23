@@ -267,9 +267,7 @@ namespace Movies.UWP
         }
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            UAC.GetInstance().LogOut();
-            Frame.Navigate(typeof(Login));
-            return;
+            Frame.Navigate(typeof(Profile));
         }
     }
 }
