@@ -28,6 +28,9 @@ namespace Movies.UWP
         public Profile()
         {
             InitializeComponent();
+            if (Util.UAC.GetInstance().UserRole == Model.Roles.ROLE_USER)
+                addUserPanel.Visibility = Visibility.Collapsed;
+
             KeyboardAccelerator GoBack = new KeyboardAccelerator
             {
                 Key = VirtualKey.GoBack
@@ -109,7 +112,14 @@ namespace Movies.UWP
             {
                 InfoText.Text = "Неверный старый пароль";
                 InfoFlyout.ShowAt(oldPass);
-                return;
+                oldPass.Password = "";
+            }
+            else
+            {
+                InfoText.Text = "Установлен новый пароль";
+                InfoFlyout.ShowAt(newPass);
+                oldPass.Password = "";
+                newPass.Password = "";
             }
         }
 

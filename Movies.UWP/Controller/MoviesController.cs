@@ -37,7 +37,7 @@ namespace Movies.UWP.Controller
             using (var db = new Context())
             {
                 IQueryable<Movie> query = db.Movies;
-                short uid = UAC.GetInstance().UserId;
+                int uid = UAC.GetInstance().UserId;
                 switch (sort)
                 {
                     case SortProperties.RatingUser:
@@ -281,15 +281,20 @@ namespace Movies.UWP.Controller
                     .ToList();
             }
         }
-        public short GetUserId(string name, string pwd)
+        public UserData GetUser(string name, string pwd)
         {
             using (var db = new Context())
             {
-                return (short)(db.Users
+                return db.Users
+                    .Where(x => x.Name.Equals(name) && x.Pwd.Equals(pwd))
+                    .Select(z => new UserData()
+                    {
+                        ID = z.ID,
+                        Role = z.Role,
+                        Name = z.Name
+                    })
                     .DefaultIfEmpty(null)
-                    .FirstOrDefault(x => x.Name.Equals(name) && x.Pwd.Equals(pwd))
-                    ?.ID
-                    ?? -1);
+                    .FirstOrDefault();
             }
         }
         public UserStatistics GetUserStatistics()
@@ -303,7 +308,7 @@ namespace Movies.UWP.Controller
         {
             using (var db = new Context())
             {
-                short uid = UAC.GetInstance().UserId;
+                int uid = UAC.GetInstance().UserId;
                 var user = db.Users
                     .DefaultIfEmpty(null)
                     .FirstOrDefault(x => x.ID == uid);
@@ -339,7 +344,7 @@ namespace Movies.UWP.Controller
         public List<Tuple<string, float>> GenrePercentage { get; private set; }
         public UserStatistics(Context context)
         {
-            short uid = UAC.GetInstance().UserId;
+            int uid = UAC.GetInstance().UserId;
             ViewingsCount = context.Viewings
                 .Count(x => x.UserID == uid);
             MoviesCount = context.Viewings

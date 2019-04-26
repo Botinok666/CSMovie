@@ -11,20 +11,22 @@ namespace Movies.UWP.Util
     public class UAC
     {
         private static UAC uac;
+        private Data.UserData user = null;
         private UAC() { }
         public static UAC GetInstance()
         {
-            return uac ?? (uac = new UAC() { UserId = -1 });
+            return uac ?? (uac = new UAC());
         }
-        public short UserId { get; private set; }
+        public int UserId { get => user?.ID ?? -1; }
+        public Roles? UserRole { get => user?.Role; }
         public bool Authorize(string name, string pass)
         {
-            UserId = MoviesController.GetInstance().GetUserId(name, pass);
+            user = MoviesController.GetInstance().GetUser(name, pass);
             return UserId != -1;
         }
         public void LogOut()
         {
-            UserId = -1;
+            user = null;
         }
     }
 }

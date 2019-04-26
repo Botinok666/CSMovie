@@ -120,6 +120,11 @@ namespace Movies.UWP
                 if (viewings.Count > 0)
                     tViewings.Text = string.Join(
                             ", ", viewings.Select(x => string.Format("{0} ({1:F1})", x.Date.ToShortDateString(), x.Rating)));
+                else
+                {
+                    tViewings.Text = "нет";
+                    tViewings.Foreground = new SolidColorBrush(Windows.UI.Colors.Gray);
+                }
             }
 
             ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
