@@ -1,4 +1,5 @@
-﻿using Movies.UWP.Util;
+﻿using Movies.Model;
+using Movies.UWP.Util;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -70,6 +71,13 @@ namespace Movies.UWP
         }
         private async void Button_Click(object sender, RoutedEventArgs e)
         {
+            Context.IsLocalDB = dbTypeCB.IsChecked ?? true;
+            using (var db = new Context())
+                if (db.Users.Count() < 1)
+                {
+                    db.Users.Add(new User() { ID = 1, Name = "admin", Pwd = "p@ssw0rd", Role = Roles.ROLE_ADMIN });
+                    db.SaveChanges();
+                }
             if (UAC.GetInstance().Authorize(loginTB.Text, passTB.Password))
                 Frame.Navigate(typeof(MainPage));
             else

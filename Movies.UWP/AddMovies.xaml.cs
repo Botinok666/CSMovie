@@ -222,7 +222,7 @@ namespace Movies.UWP
                 .Select(movie => new MovieDisplay(movie, DateTime.Now.Date, movie.RatingIMDB))
                 .ToList();
             dgv.ItemsSource = Movies;
-            SaveBtn.IsEnabled = true;
+            SaveBtn.IsEnabled = Movies.Count > 0;
             if (!UpperRibbon.Children.Contains(startDate))
             {
                 startDate.DateChanged += Date_DateChanged;

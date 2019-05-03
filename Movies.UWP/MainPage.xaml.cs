@@ -97,12 +97,6 @@ namespace Movies.UWP
         {
             if (UAC.GetInstance().UserId == -1)
             {
-                using (var db = new Context())
-                    if (db.Users.Count() < 1)
-                    {
-                        db.Users.Add(new User() { ID = 1, Name = "admin", Pwd = "p@ssw0rd", Role = Roles.ROLE_ADMIN });
-                        db.SaveChanges();
-                    }
                 Frame.Navigate(typeof(Login));
                 return;
             }

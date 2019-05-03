@@ -30,10 +30,11 @@
                Style="{StaticResource CaptionTextBlockStyle}" 
                Margin="44,8,0,0"/>
         </Grid>
-        <StackPanel Grid.Row="1" Orientation="Vertical" Spacing="20" 
+        <StackPanel Grid.Row="1" Orientation="Vertical" Spacing="15" 
                     VerticalAlignment="Center" HorizontalAlignment="Center">
             <TextBox Name="loginTB" PlaceholderText="Имя" Width="240"/>
             <PasswordBox Name="passTB" PlaceholderText="Пароль" Width="240"/>
+            <CheckBox x:Name="dbTypeCB" Content="Локальная БД" IsChecked="True"/>
             <Button Content="Вход" Click="Button_Click" HorizontalAlignment="Center"/>
         </StackPanel>
     </Grid>

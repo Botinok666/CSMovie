@@ -19,6 +19,7 @@ using Windows.UI.Xaml.Navigation;
 using Windows.ApplicationModel.Core;
 using Windows.UI.ViewManagement;
 using Windows.UI;
+using Windows.Storage;
 
 namespace Movies.UWP
 {
@@ -35,12 +36,27 @@ namespace Movies.UWP
         {
             InitializeComponent();
             Suspending += OnSuspending;
+
+            DBinit();
+        }
+        private async void DBinit()
+        {
+            if (!(await ApplicationData.Current.LocalFolder.TryGetItemAsync("Movies.db") is StorageFile))
+            {
+                // first time ... copy the .db file from assets to local folder
+                var localFolder = ApplicationData.Current.LocalFolder;
+                var originalDbFile = await StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/Movies.db"));
+
+                if (null != originalDbFile)
+                {
+                    await originalDbFile.CopyAsync(localFolder, "Movies.db", NameCollisionOption.ReplaceExisting);
+                }
+            }
             using (var db = new Context())
             {
                 db.Database.Migrate();
             }
         }
-
         /// <summary>
         /// Invoked when the application is launched normally by the end user.  Other entry points
         /// will be used such as when the application is launched to open a specific file.

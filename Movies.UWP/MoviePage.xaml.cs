@@ -140,6 +140,8 @@ namespace Movies.UWP
                         poster.Source = bitmapImage;
                     }
                 }
+                else
+                    poster.Source = new BitmapImage(new Uri(movie.PosterLink));
             }
         }
         private void Back_Click(object sender, RoutedEventArgs e)

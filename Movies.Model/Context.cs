@@ -10,6 +10,7 @@ namespace Movies.Model
 {
     public class Context : DbContext
     {
+        public static bool IsLocalDB { get; set; } = true;
         public DbSet<Movie> Movies { get; set; }
         public DbSet<Person> People { get; set; }
         public DbSet<Country> Countries { get; set; }
@@ -23,8 +24,10 @@ namespace Movies.Model
         public DbSet<MovieGenre> MovieGenre { get; set; }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            //optionsBuilder.UseLazyLoadingProxies().UseSqlite(@"Filename=Movies.db");
-            optionsBuilder.UseLazyLoadingProxies().UseSqlServer("Server=lenovo-pc;User id=User0;password=User0;database=Movies");
+            if (IsLocalDB)
+                optionsBuilder.UseLazyLoadingProxies().UseSqlite(@"Filename=Movies.db");
+            else
+                optionsBuilder.UseLazyLoadingProxies().UseSqlServer("Server=lenovo-pc;User id=User0;password=User0;database=Movies");
         }
     }
 }
