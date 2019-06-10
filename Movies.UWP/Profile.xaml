@@ -84,11 +84,21 @@
                 </Grid>
             </StackPanel>
         </StackPanel>
-        <StackPanel Grid.Row="2" Orientation="Horizontal" Padding="5" Spacing="5" Background="{StaticResource AltColor}">
-            <PasswordBox x:Name="oldPass" PlaceholderText="Старый пароль" MinWidth="150"/>
-            <PasswordBox x:Name="newPass" PlaceholderText="Новый пароль" MinWidth="150"/>
-            <Button x:Name="changePwd" Content="Сменить пароль" Click="ChangePwd_Click"/>
-        </StackPanel>
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="0" Orientation="Horizontal" Padding="5" Spacing="5" Background="{StaticResource AltColor}">
+                <PasswordBox x:Name="oldPass" PlaceholderText="Старый пароль" MinWidth="150"/>
+                <PasswordBox x:Name="newPass" PlaceholderText="Новый пароль" MinWidth="150"/>
+                <Button x:Name="changePwd" Content="Сменить пароль" Click="ChangePwd_Click"/>
+            </StackPanel>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Padding="5" Spacing="5" Background="{StaticResource AltColor}">
+                <Button x:Name="backupDB" Content="Save DB backup" Click="BackupDB_Click"/>
+            </StackPanel>
+        </Grid>
+
         
         <StackPanel x:Name="addUserPanel" Grid.Row="3" Orientation="Horizontal" Padding="5" Spacing="5">
             <TextBox x:Name="userName" PlaceholderText="Логин" MinWidth="150"/>

@@ -128,36 +128,58 @@ namespace Movies.UWP
                 return;
 
             StringBuilder builder = new StringBuilder("");
-            List<string> html;
+            List<byte[]> html;
             int count = 0;
             using (Stream stream = await file.OpenStreamForReadAsync())
             {
-                if (file.FileType.Equals("zip"))
+                if (file.FileType.Equals(".zip"))
                 {
-                    using (ZipArchive zip = new ZipArchive(stream,
-                        ZipArchiveMode.Read, false))
+                    using (ZipArchive zip = new ZipArchive(stream, ZipArchiveMode.Read, false))
                     {
                         count = zip.Entries.Count;
                         html = zip.Entries
                             .OrderBy(entry => entry.LastWriteTime.DateTime)
                             .Select(entry =>
                             {
-                                var streamR = new StreamReader(
-                                    entry.Open(), CodePagesEncodingProvider.Instance.GetEncoding(1251));
-                                string result = streamR.ReadToEnd();
-                                streamR.Close();
-                                return result;
+                                byte[] arr = new byte[entry.Length];
+                                entry.Open().Read(arr, 0, arr.Length);
+                                return arr;
                             })
                             .ToList();
                     }
                 }
+                else if (file.FileType.Equals(".html"))
+                {
+                    html = new List<byte[]>(1)
+                    {
+                        new byte[stream.Length]
+                    };
+                    stream.Read(html[0], 0, html[0].Length);
+                }
                 else
-                    html = new List<string>() { new StreamReader(stream).ReadToEnd() };
+                    html = new List<byte[]>();
             }
             List<MovieData> movies = html
                 .AsParallel()
-                .Select(s => 
+                .Select(x => 
                 {
+                    string s = Encoding.UTF8.GetString(x);
+                    int t = s.IndexOf("charset=") + "charset=".Length;
+                    int l = s.IndexOf('"', t) - t;
+                    if (l > 0)
+                    {
+                        Encoding enc;
+                        try
+                        {
+                            enc = Encoding.GetEncoding(s.Substring(t, l));
+                        }
+                        catch (Exception)
+                        {
+                            enc = CodePagesEncodingProvider.Instance.GetEncoding(s.Substring(t, l));
+                        }
+                        if (enc != Encoding.UTF8)
+                            s = enc.GetString(x);
+                    }
                     try
                     {
                         MovieData temp = KPParser.ParseString(s);
@@ -235,6 +257,12 @@ namespace Movies.UWP
         {
             if (InfoFlyout.IsOpen)
                 InfoFlyout.Hide();
+            if (Movies.Any(x => x.HasErrors))
+            {
+                InfoText.Text = "Пожалуйста, сначала исправьте ошибки в таблице";
+                InfoFlyout.ShowAt(dgv);
+                return;
+            }
             SaveBtn.IsEnabled = false;
             MoviesController controller = MoviesController.GetInstance();
             int result = await controller.SaveMovies(Movies.Select(x => x.Movie).ToList());
@@ -245,6 +273,7 @@ namespace Movies.UWP
                 result, Movies.Count, Environment.NewLine, viewings);
             InfoFlyout.ShowAt(dgv);
             Movies = new List<MovieDisplay>();
+            dgv.ItemsSource = Movies;
         }
         private void Date_DateChanged(object sender, DatePickerValueChangedEventArgs e)
         {
@@ -260,6 +289,8 @@ namespace Movies.UWP
                 row.Date = startDate.Date.AddDays(current).ToString();
                 current += offset;
             }
+            dgv.ItemsSource = null;
+            dgv.ItemsSource = Movies;
         }
 
         private void Back_Click(object sender, RoutedEventArgs e)

@@ -37,7 +37,6 @@ namespace Movies.UWP
         public MainPage()
         {
             InitializeComponent();
-            Loaded += new RoutedEventHandler(CheckCredentials);
             filterCB.ItemsSource = FilterOption.FilterOptions;
             filterCB.DisplayMemberPath = "Description";
             sortCB.ItemsSource = SortOption.SortOptions;
@@ -60,6 +59,8 @@ namespace Movies.UWP
             // Register a handler for when the title bar visibility changes.
             // For example, when the title bar is invoked in full screen mode.
             coreTitleBar.IsVisibleChanged += CoreTitleBar_IsVisibleChanged;
+
+            Loaded += new RoutedEventHandler(CheckCredentials);
         }
 
         private void CoreTitleBar_LayoutMetricsChanged(CoreApplicationViewTitleBar sender, object args)

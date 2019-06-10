@@ -7,6 +7,8 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.ApplicationModel.Core;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.Storage;
+using Windows.Storage.Pickers;
 using Windows.System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -156,6 +158,19 @@ namespace Movies.UWP
         {
             On_BackRequested();
             args.Handled = true;
+        }
+
+        private async void BackupDB_Click(object sender, RoutedEventArgs e)
+        {
+            if (await ApplicationData.Current.LocalFolder.TryGetItemAsync("Movies.db") is StorageFile file)
+            {
+                FolderPicker folderPicker = new FolderPicker();
+                folderPicker.FileTypeFilter.Add("*");
+                if (await folderPicker.PickSingleFolderAsync() is StorageFolder folder)
+                {
+                    await file.CopyAsync(folder, file.Name, NameCollisionOption.ReplaceExisting);
+                }
+            }
         }
     }
 }

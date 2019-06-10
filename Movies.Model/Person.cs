@@ -15,9 +15,9 @@ namespace Movies.Model
         [Required]
         [MaxLength(255)]
         public string Name { get; set; }
-        public virtual List<MovieDirector> Directors { get; set; }
-        public virtual List<MovieScreenwriter> Screenwriters { get; set; }
-        public virtual List<MovieActor> Actors { get; set; }
+        public virtual List<MovieDirector> MovieDirectors { get; set; }
+        public virtual List<MovieScreenwriter> MovieScreenwriters { get; set; }
+        public virtual List<MovieActor> MovieActors { get; set; }
     }
     public class PersonComparer : IEqualityComparer<Person>
     {

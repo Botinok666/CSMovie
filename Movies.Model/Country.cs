@@ -15,7 +15,7 @@ namespace Movies.Model
         [Required]
         [MaxLength(64)]
         public string Name { get; set; }
-        public virtual List<MovieCountry> Countries { get; set; }
+        public virtual List<MovieCountry> Movies { get; set; }
     }
     public class CountryComparer : IEqualityComparer<Country>
     {

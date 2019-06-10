@@ -15,7 +15,7 @@ namespace Movies.Model
         [Required]
         [MaxLength(64)]
         public string Name { get; set; }
-        public virtual List<MovieGenre> Genres { get; set; }
+        public virtual List<MovieGenre> Movies { get; set; }
     }
     public class GenreComparer : IEqualityComparer<Genre>
     {
