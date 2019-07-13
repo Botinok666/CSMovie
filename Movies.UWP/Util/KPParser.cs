@@ -26,7 +26,9 @@ namespace Movies.UWP.Util
         public async static Task<MovieData> ParseURL(string url)
         {
             var document = await BrowsingContext.New(Configuration.Default.WithDefaultLoader()).OpenAsync(url);
-            return ParseString(document.ToHtml());
+            var result = ParseString(document.ToHtml());
+            document.Dispose();
+            return result;
         }
         private static Tuple<int, string> ConvertToPair(IElement e)
         {
@@ -40,26 +42,27 @@ namespace Movies.UWP.Util
             StateEnum state = StateEnum.ID;
             try
             {
-                IElement element = doc.QuerySelector("div[class='js-ott-widget online_button_film']");
-                movie.ID = int.Parse(element
-                    .GetAttribute("data-kp-film-id"));
+                IElement element = doc.QuerySelector("head > meta[property=og\\3A url]");
+                movie.ID = int.Parse(new DirectoryInfo(element
+                    .GetAttribute("content")).Name);
                 
                 state = StateEnum.Poster;
-                movie.PosterLink = doc.QuerySelector("link[rel=image_src]")
+                movie.PosterLink = doc.QuerySelector("head > link[rel=image_src]")
                     .GetAttribute("href");
 
                 state = StateEnum.Localized;
+                element = doc.QuerySelector("div#viewFilmInfoWrapper");
                 movie.LocalizedTitle = WebUtility.HtmlDecode(
-                    element.GetAttribute("data-title"));
+                    element.QuerySelector("h1.moviename-big > span").InnerHtml);
 
                 state = StateEnum.Original;
                 movie.OriginalTitle = Regex.Replace
-                    (WebUtility.HtmlDecode(doc.QuerySelector("span[itemprop=alternativeHeadline]").InnerHtml), 
+                    (WebUtility.HtmlDecode(element.QuerySelector("span.alternativeHeadline").InnerHtml), 
                     "\\([Вв]идео\\)|\\(ТВ\\)|в\\s3D",
                     "");
 
                 state = StateEnum.Year;
-                element = doc.QuerySelector("table.info");
+                element = element.QuerySelector("table.info");
                 var elements = element
                     .QuerySelectorAll("tr");
                 movie.Year = short.Parse(elements[0]
