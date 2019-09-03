@@ -32,9 +32,9 @@ namespace Movies.UWP.Util
         }
         private static Tuple<int, string> ConvertToPair(IElement e)
         {
-            return new Tuple<int, string>(
-                    int.Parse(new DirectoryInfo(e.GetAttribute("href")).Name),
-                    WebUtility.HtmlDecode(e.InnerHtml));
+            if (!int.TryParse(new DirectoryInfo(e.GetAttribute("href")).Name, out int id))
+                return new Tuple<int, string>(-1, WebUtility.HtmlDecode(e.InnerHtml));
+            return new Tuple<int, string>(id, WebUtility.HtmlDecode(e.InnerHtml));
         }
         private static MovieData Parse(IHtmlDocument doc)
         {
@@ -72,7 +72,7 @@ namespace Movies.UWP.Util
                 state = StateEnum.Country;
                 movie.Countries = elements[1]
                     .QuerySelectorAll("a")
-                    ?.Select(a => new CountryData(ConvertToPair(a)))
+                    ?.Select(a => new CountryData(WebUtility.HtmlDecode(a.InnerHtml)))
                     .ToList()
                     ?? new List<CountryData>();
 
@@ -100,7 +100,7 @@ namespace Movies.UWP.Util
                 state = StateEnum.Genre;
                 movie.Genres = element
                     .QuerySelectorAll("span[itemprop=genre] > a")
-                    ?.Select(a => new GenreData(ConvertToPair(a)))
+                    ?.Select(a => new GenreData(WebUtility.HtmlDecode(a.InnerHtml)))
                     .ToList()
                     ?? new List<GenreData>();
                 

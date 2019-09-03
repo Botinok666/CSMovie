@@ -98,8 +98,9 @@ namespace Movies.UWP
         {
             if (UAC.GetInstance().UserId == -1)
             {
-                Frame.Navigate(typeof(Login));
-                return;
+                //Frame.Navigate(typeof(Login));
+                //return;
+                UAC.GetInstance().Authorize("admin", "p@ssw0rd");
             }
             if (firstLoad)
             {

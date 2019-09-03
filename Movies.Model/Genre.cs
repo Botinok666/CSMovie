@@ -10,7 +10,7 @@ namespace Movies.Model
 {
     public class Genre
     {
-        [DatabaseGenerated(DatabaseGeneratedOption.None)]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public short ID { get; set; }
         [Required]
         [MaxLength(64)]
@@ -21,11 +21,11 @@ namespace Movies.Model
     {
         public bool Equals(Genre x, Genre y)
         {
-            return x.ID == y.ID;
+            return x.Name.Equals(y.Name);
         }
         public int GetHashCode(Genre obj)
         {
-            return obj.ID.GetHashCode() + obj.Name.GetHashCode();
+            return obj.Name.GetHashCode();
         }
     }
 }

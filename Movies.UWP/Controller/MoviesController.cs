@@ -161,17 +161,47 @@ namespace Movies.UWP.Controller
             {
                 HashSet<Country> countries = new HashSet<Country>(new CountryComparer());
                 movies.ForEach(x => 
-                    countries.UnionWith(x.Countries.Select(y => new Country() { ID = y.ID, Name = y.Name })));
-                var countriesNew = countries.Where(x => !db.Countries.Contains(x));
+                    countries.UnionWith(x.Countries.Select(y => new Country() { Name = y.Name })));
+                foreach (var x in countries)
+                    x.ID = db.Countries
+                        .DefaultIfEmpty(new Country() { ID = 0 })
+                        .FirstOrDefault(y => y.Name.Equals(x.Name))
+                        .ID;
+                var countriesNew = countries.Where(x => x.ID == 0);
                 if (countriesNew.Count() > 0)
+                {
                     db.AddRange(countriesNew);
+                    foreach (var x in countries)
+                    {
+                        if (x.ID != 0)
+                            continue;
+                        x.ID = db.Countries
+                            .First(y => y.Name.Equals(x.Name))
+                            .ID;
+                    }
+                }
 
                 HashSet<Genre> genres = new HashSet<Genre>(new GenreComparer());
                 movies.ForEach(x => 
-                    genres.UnionWith(x.Genres.Select(y => new Genre() { ID = y.ID, Name = y.Name })));
-                var genresNew = genres.Where(x => !db.Genres.Contains(x));
+                    genres.UnionWith(x.Genres.Select(y => new Genre() { Name = y.Name })));
+                foreach (var x in genres)
+                    x.ID = db.Genres
+                        .DefaultIfEmpty(new Genre() { ID = 0 })
+                        .FirstOrDefault(y => y.Name.Equals(x.Name))
+                        .ID;
+                var genresNew = genres.Where(x => x.ID == 0);
                 if (genresNew.Count() > 0)
+                {
                     db.AddRange(genresNew);
+                    foreach (var x in genres)
+                    {
+                        if (x.ID != 0)
+                            continue;
+                        x.ID = db.Genres
+                            .First(y => y.Name.Equals(x.Name))
+                            .ID;
+                    }
+                }
 
                 HashSet<Person> people = new HashSet<Person>(new PersonComparer());
                 movies.ForEach(x =>
@@ -215,9 +245,11 @@ namespace Movies.UWP.Controller
                         movieScreenwriters.AddRange(x.Screenwriters.Select(y => new MovieScreenwriter() 
                             { ID = (x.ID << 4) + x.Screenwriters.IndexOf(y), MovieId = x.ID, ScreenwriterId = y.ID }));
                         movieCountries.AddRange(x.Countries.Select(y => new MovieCountry() 
-                            { ID = (x.ID << 4) + x.Countries.IndexOf(y), MovieId = x.ID, CountryId = y.ID }));
+                            { ID = (x.ID << 4) + x.Countries.IndexOf(y), MovieId = x.ID, 
+                            CountryId = countries.Single(z => y.Name.Equals(z.Name)).ID }));
                         movieGenres.AddRange(x.Genres.Select(y => new MovieGenre() 
-                            { ID = (x.ID << 4) + x.Genres.IndexOf(y), MovieId = x.ID, GenreId = y.ID }));
+                            { ID = (x.ID << 4) + x.Genres.IndexOf(y), MovieId = x.ID, 
+                            GenreId = genres.Single(z => y.Name.Equals(z.Name)).ID }));
                     });
                     db.AddRange(movieActors);
                     db.AddRange(movieDirectors);

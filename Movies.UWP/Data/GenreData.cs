@@ -8,5 +8,6 @@ namespace Movies.UWP.Data
         public string Name { get; set; }
 
         public GenreData(Tuple<int, string> pair) { ID = (short)pair.Item1; Name = pair.Item2; }
+        public GenreData(string name) { Name = name; }
     }
 }
